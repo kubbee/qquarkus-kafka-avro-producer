@@ -1,0 +1,8 @@
+{
+  "namespace" : "com.br.example.kafka.avro",
+  "type" : "record",
+  "name" : "NotificationKafka",
+  "fields" : [
+    {"name":"body","type":"string"}
+    ]
+}

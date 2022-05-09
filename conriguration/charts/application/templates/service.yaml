@@ -1,0 +1,31 @@
+{{- if .Values.enabled }}
+{{- if .Values.application }}
+---
+kind: Service
+apiVersion: v1
+metadata:
+  annotations:
+    description: The web server's http port.
+    service.alpha.openshift.io/dependencies: Service Java Application.
+  name: {{ .Values.application.name }}
+  namespace: {{ .Values.application.deployment.image.namespace }}
+  labels:
+    app: {{ .Values.application.name }}
+    app.kubernetes.io/component: {{ .Values.application.name }}
+    app.kubernetes.io/instance: {{ .Values.application.name }}
+spec:
+  ports:
+    {{- range $port := .Values.application.service.ports }}
+    - name: {{ $port.name }}
+      protocol: {{ $port.protocol }}
+      port: {{ $port.port }}
+      targetPort: {{ $port.targetPort }}
+    {{- end }}
+  selector:
+    app: {{ .Values.application.name }}
+  type: {{ .Values.application.service.type }}
+  sessionAffinity: {{ .Values.application.service.sessionAffinity }}
+status:
+  loadBalancer: {}
+{{- end }}
+{{- end }}

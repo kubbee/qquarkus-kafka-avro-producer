@@ -1,0 +1,73 @@
+{{- if .Values.enabled }}
+{{- if .Values.application }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/part-of: {{ .Values.application.name }}
+    application: {{ .Values.application.name }}
+    stage: {{ .Values.application.labels.stage }}
+  name: {{ .Values.application.name }}
+spec:
+  replicas: {{ .Values.application.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.application.name }}
+  strategy:
+    activeDeadlineSeconds: 21600
+    resources: {}
+    rollingParams:
+      intervalSeconds: 1
+      maxSurge: 25%
+      maxUnavailable: 25%
+      timeoutSeconds: 600
+      updatePeriodSeconds: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      creationTimestamp:
+      labels:
+        app: {{ .Values.application.name }}
+        app-version: {{ .Values.application.labels.version }}
+        git-commit: {{ .Values.application.labels.gitCommit }}
+        jenkins-build: {{ .Values.application.labels.jenkinsBuild }}
+        tier: {{ .Values.application.labels.tier }}
+    spec:
+      containers:
+        - image: {{ .Values.application.deployment.image.registry }}/{{ .Values.application.deployment.image.namespace }}/{{ .Values.application.deployment.image.name }}:{{ .Values.application.deployment.image.appTag }}
+          imagePullPolicy: {{ .Values.application.deployment.image.imagePullPolicy }}
+          name: {{ .Values.application.deployment.image.name }}
+          env:
+            - name: NODE_ENV
+              value: {{ .Values.application.deployment.env.nodeEnv }}
+            - name: spring_profiles_active
+              value: {{ .Values.application.deployment.env.springProfile }}
+          ports:
+            {{- range $port := .Values.application.deployment.ports }}
+            - containerPort: {{ $port.containerPort }}
+              protocol: {{ $port.protocol }}
+            {{end}}
+          resources: {}
+          terminationMessagePath: {{ .Values.application.deployment.terminationMessagePath }}
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.application.deployment.readinessProbe.path }}
+              port: {{ .Values.application.deployment.readinessProbe.port }}
+            initialDelaySeconds: {{ .Values.application.deployment.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.application.deployment.readinessProbe.periodSeconds }}
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.application.deployment.livenessProbe.path }}
+              port: {{ .Values.application.deployment.livenessProbe.port }}
+            initialDelaySeconds: {{ .Values.application.deployment.livenessProbe.initialDelaySeconds }}
+            timeoutSeconds: {{ .Values.application.deployment.livenessProbe.timeoutSeconds }}
+            periodSeconds: {{ .Values.application.deployment.livenessProbe.periodSeconds }}
+            failureThreshold: {{ .Values.application.deployment.livenessProbe.failureThreshold }}
+      dnsPolicy: {{ .Values.application.deployment.dnsPolicy }}
+      restartPolicy: {{ .Values.application.deployment.restartPolicy }}
+      securityContext: {}
+      terminationGracePeriodSeconds: {{ .Values.application.deployment.terminationGracePeriodSeconds }}
+    triggers: []
+{{- end }}
+{{- end }}

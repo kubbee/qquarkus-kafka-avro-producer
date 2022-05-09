@@ -1,0 +1,5 @@
+apiVersion: v2
+description: JDk11-Application
+name: java-application
+tags: java,application
+version: v0.0.1

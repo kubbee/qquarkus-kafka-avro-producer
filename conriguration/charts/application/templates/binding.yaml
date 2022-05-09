@@ -1,0 +1,18 @@
+{{- if .Values.enabled }}
+{{- if .Values.application }}
+---
+apiVersion: authorization.openshift.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ .Values.application.roleBinding.name }}
+  namespace: {{ .Values.application.deployment.image.namespace }}
+roleRef:
+  name: {{ .Values.application.roleBinding.role }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ .Values.application.roleBinding.serviceAccount.name }}
+    namespace: {{ .Values.application.roleBinding.serviceAccount.namespace }}
+userNames:
+  - system:serviceaccount:{{ .Values.application.roleBinding.serviceAccount.namespace }}:{{ .Values.application.roleBinding.serviceAccount.name }}
+{{- end }}
+{{- end }}

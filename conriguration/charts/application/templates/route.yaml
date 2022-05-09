@@ -1,0 +1,24 @@
+{{- if .Values.enabled }}
+{{- if .Values.application.route.expose }}
+---
+kind: Route
+apiVersion: route.openshift.io/v1
+metadata:
+  name: {{ .Values.application.name }}
+  namespace: {{ .Values.application.deployment.image.namespace }}
+  labels:
+    app: {{ .Values.application.name }}
+    app.kubernetes.io/component: {{ .Values.application.name }}
+    app.kubernetes.io/instance: {{ .Values.application.name }}
+  annotations:
+    description: Route for application's http service.
+spec:
+  to:
+    kind: Service
+    name: {{ .Values.application.name }}
+    weight: {{ .Values.application.route.service.weight }}
+  port:
+    targetPort: {{ .Values.application.route.targetPort }}
+  wildcardPolicy: {{ .Values.application.route.wildcardPolicy }}
+{{- end }}
+{{- end }}

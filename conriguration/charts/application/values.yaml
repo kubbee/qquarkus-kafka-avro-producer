@@ -1,0 +1,82 @@
+enabled: true
+
+environment: &environment test
+springprofile: &profile test
+name: &app ms-template-apontamento
+
+application:
+  name: *app
+  replicas: 1
+  labels:
+    version: init
+    tier: init
+    gitCommit: init
+    jenkinsBuild: init
+  deployment:
+    ports:
+      - name: 8080-tcp
+        containerPort: 8080
+        protocol: TCP
+      - name: 8081-tcp
+        containerPort: 8081
+        protocol: TCP
+      - name: 8778-tcp
+        containerPort: 8778
+    image:
+      name: *app
+      imagePullPolicy: Always
+      namespace: ''
+      appTag: latest
+      registry: image-registry.openshift-image-registry.svc:5000
+    env:
+      nodeEnv: *environment
+      springProfile: *profile
+    readinessProbe:
+      path: "/actuator/health"
+      port: 8081
+      initialDelaySeconds: 3
+      periodSeconds: 3
+    livenessProbe:
+      path: "/actuator/health"
+      port: 8081
+      initialDelaySeconds: 20
+      timeoutSeconds: 2
+      periodSeconds: 8
+      failureThreshold: 1
+    dnsPolicy: ClusterFirst
+    restartPolicy: Always
+    terminationGracePeriodSeconds: 30
+    terminationMessagePath: '/dev/termination-log'
+  roleBinding:
+    name: ms-template-apontamento-edit
+    role: edit
+    serviceAccount:
+      name: jenkins
+      namespace: labs-ci-cd
+  service:
+    type: ClusterIP
+    sessionAffinity: None
+    ports:
+      - name: 8080-tcp
+        port: 8080
+        protocol: TCP
+        targetPort: 8080
+      - name: 8081-tcp
+        port: 8081
+        protocol: TCP
+        targetPort: 8081
+      - name: 8778-tcp
+        port: 8778
+        protocol: TCP
+        targetPort: 8778
+  route:
+    expose: true
+    targetPort: 8080-tcp
+    service:
+      weight: 100
+    wildcardPolicy: None
+
+
+
+
+
